@@ -1,8 +1,11 @@
 package com.heloisasim.foursquareapi.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.ArrayList;
 
-public class Location {
+public class Location implements Parcelable {
 
     private String state;
     private ArrayList<LabeledLatLngs> labeledLatLngs;
@@ -113,4 +116,54 @@ public class Location {
         this.country = country;
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.state);
+        dest.writeTypedList(this.labeledLatLngs);
+        dest.writeString(this.crossStreet);
+        dest.writeDouble(this.lat);
+        dest.writeString(this.address);
+        dest.writeStringList(this.formattedAddress);
+        dest.writeString(this.city);
+        dest.writeString(this.postalCode);
+        dest.writeString(this.cc);
+        dest.writeDouble(this.lng);
+        dest.writeInt(this.distance);
+        dest.writeString(this.country);
+    }
+
+    public Location() {
+    }
+
+    protected Location(Parcel in) {
+        this.state = in.readString();
+        this.labeledLatLngs = in.createTypedArrayList(LabeledLatLngs.CREATOR);
+        this.crossStreet = in.readString();
+        this.lat = in.readDouble();
+        this.address = in.readString();
+        this.formattedAddress = in.createStringArrayList();
+        this.city = in.readString();
+        this.postalCode = in.readString();
+        this.cc = in.readString();
+        this.lng = in.readDouble();
+        this.distance = in.readInt();
+        this.country = in.readString();
+    }
+
+    public static final Parcelable.Creator<Location> CREATOR = new Parcelable.Creator<Location>() {
+        @Override
+        public Location createFromParcel(Parcel source) {
+            return new Location(source);
+        }
+
+        @Override
+        public Location[] newArray(int size) {
+            return new Location[size];
+        }
+    };
 }

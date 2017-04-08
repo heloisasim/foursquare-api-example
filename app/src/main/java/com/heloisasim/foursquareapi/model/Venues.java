@@ -1,8 +1,11 @@
 package com.heloisasim.foursquareapi.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.ArrayList;
 
-public class Venues {
+public class Venues implements Parcelable {
 	
     private String id;
     private ArrayList<Categories> categories;
@@ -167,6 +170,66 @@ public class Venues {
         this.name = name;
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
 
-    
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.id);
+        dest.writeTypedList(this.categories);
+        dest.writeParcelable(this.stats, flags);
+        dest.writeStringList(this.venueChains);
+        dest.writeParcelable(this.venuePage, flags);
+        dest.writeParcelable(this.contact, flags);
+        dest.writeByte(this.verified ? (byte) 1 : (byte) 0);
+        dest.writeByte(this.venueRatingBlacklisted ? (byte) 1 : (byte) 0);
+        dest.writeString(this.referralId);
+        dest.writeString(this.storeId);
+        dest.writeString(this.url);
+        dest.writeParcelable(this.beenHere, flags);
+        dest.writeParcelable(this.location, flags);
+        dest.writeByte(this.allowMenuUrlEdit ? (byte) 1 : (byte) 0);
+        dest.writeParcelable(this.specials, flags);
+        dest.writeByte(this.hasPerk ? (byte) 1 : (byte) 0);
+        dest.writeParcelable(this.menu, flags);
+        dest.writeString(this.name);
+    }
+
+    public Venues() {
+    }
+
+    protected Venues(Parcel in) {
+        this.id = in.readString();
+        this.categories = in.createTypedArrayList(Categories.CREATOR);
+        this.stats = in.readParcelable(Stats.class.getClassLoader());
+        this.venueChains = in.createStringArrayList();
+        this.venuePage = in.readParcelable(VenuePage.class.getClassLoader());
+        this.contact = in.readParcelable(Contact.class.getClassLoader());
+        this.verified = in.readByte() != 0;
+        this.venueRatingBlacklisted = in.readByte() != 0;
+        this.referralId = in.readString();
+        this.storeId = in.readString();
+        this.url = in.readString();
+        this.beenHere = in.readParcelable(BeenHere.class.getClassLoader());
+        this.location = in.readParcelable(Location.class.getClassLoader());
+        this.allowMenuUrlEdit = in.readByte() != 0;
+        this.specials = in.readParcelable(Specials.class.getClassLoader());
+        this.hasPerk = in.readByte() != 0;
+        this.menu = in.readParcelable(Menu.class.getClassLoader());
+        this.name = in.readString();
+    }
+
+    public static final Parcelable.Creator<Venues> CREATOR = new Parcelable.Creator<Venues>() {
+        @Override
+        public Venues createFromParcel(Parcel source) {
+            return new Venues(source);
+        }
+
+        @Override
+        public Venues[] newArray(int size) {
+            return new Venues[size];
+        }
+    };
 }

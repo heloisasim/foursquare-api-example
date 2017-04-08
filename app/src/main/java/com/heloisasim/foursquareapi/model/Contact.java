@@ -1,6 +1,9 @@
 package com.heloisasim.foursquareapi.model;
 
-public class Contact {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Contact implements Parcelable {
 	
     private String phone;
     private String twitter;
@@ -57,4 +60,42 @@ public class Contact {
         this.facebookName = facebookName;
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.phone);
+        dest.writeString(this.twitter);
+        dest.writeString(this.facebook);
+        dest.writeString(this.formattedPhone);
+        dest.writeString(this.facebookUsername);
+        dest.writeString(this.facebookName);
+    }
+
+    public Contact() {
+    }
+
+    protected Contact(Parcel in) {
+        this.phone = in.readString();
+        this.twitter = in.readString();
+        this.facebook = in.readString();
+        this.formattedPhone = in.readString();
+        this.facebookUsername = in.readString();
+        this.facebookName = in.readString();
+    }
+
+    public static final Parcelable.Creator<Contact> CREATOR = new Parcelable.Creator<Contact>() {
+        @Override
+        public Contact createFromParcel(Parcel source) {
+            return new Contact(source);
+        }
+
+        @Override
+        public Contact[] newArray(int size) {
+            return new Contact[size];
+        }
+    };
 }

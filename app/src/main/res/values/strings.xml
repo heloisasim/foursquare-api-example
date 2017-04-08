@@ -3,4 +3,7 @@
     <string name="meters">" meters"</string>
     <string name="distance_label">Distance to current location:</string>
     <string name="address_label">Address:</string>
+    <string name="connection_error">No internet connection</string>
+    <string name="generic_error">An error occurred. Try again later.</string>
+    <string name="empty_message">There is no venue to show.</string>
 </resources>

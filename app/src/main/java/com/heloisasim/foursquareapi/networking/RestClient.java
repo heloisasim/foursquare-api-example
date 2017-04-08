@@ -2,7 +2,13 @@ package com.heloisasim.foursquareapi.networking;
 
 import com.google.gson.Gson;
 import com.heloisasim.foursquareapi.BuildConfig;
+import com.heloisasim.foursquareapi.model.BaseClass;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
+import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -24,7 +30,9 @@ public class RestClient {
         mService = retrofit.create(ApiService.class);
     }
 
-    public ApiService getApiService() {
-        return mService;
+    public Call<BaseClass> prepareVenuesRequest() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+        String currentDate = dateFormat.format(new Date());
+        return mService.getVenues(BuildConfig.foursquareStartLocation, BuildConfig.foursquareClientId, BuildConfig.foursquareClientSecret, currentDate);
     }
 }

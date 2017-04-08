@@ -1,6 +1,9 @@
 package com.heloisasim.foursquareapi.model;
 
-public class Menu {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Menu implements Parcelable {
 	
     private String anchor;
     private String label;
@@ -57,4 +60,42 @@ public class Menu {
         this.externalUrl = externalUrl;
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.anchor);
+        dest.writeString(this.label);
+        dest.writeString(this.mobileUrl);
+        dest.writeString(this.type);
+        dest.writeString(this.url);
+        dest.writeString(this.externalUrl);
+    }
+
+    public Menu() {
+    }
+
+    protected Menu(Parcel in) {
+        this.anchor = in.readString();
+        this.label = in.readString();
+        this.mobileUrl = in.readString();
+        this.type = in.readString();
+        this.url = in.readString();
+        this.externalUrl = in.readString();
+    }
+
+    public static final Parcelable.Creator<Menu> CREATOR = new Parcelable.Creator<Menu>() {
+        @Override
+        public Menu createFromParcel(Parcel source) {
+            return new Menu(source);
+        }
+
+        @Override
+        public Menu[] newArray(int size) {
+            return new Menu[size];
+        }
+    };
 }
