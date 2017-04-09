@@ -6,8 +6,10 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -43,6 +45,9 @@ public class DetailActivity extends AppCompatActivity implements Callback<VenueB
     @BindView(R.id.detail_collapsing_toolbar)
     CollapsingToolbarLayout mTitle;
 
+    @BindView(R.id.detail_toolbar)
+    Toolbar mToolbar;
+
     @BindView(R.id.detail_top_image)
     ImageView mImageView;
 
@@ -70,6 +75,9 @@ public class DetailActivity extends AppCompatActivity implements Callback<VenueB
         setContentView(R.layout.activity_detail);
         ButterKnife.bind(this);
 
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         mVenue = getIntent().getParcelableExtra(VENUE_EXTRA);
         if (savedInstanceState != null) {
             mVenue = savedInstanceState.getParcelable(VENUE_EXTRA);
@@ -87,6 +95,15 @@ public class DetailActivity extends AppCompatActivity implements Callback<VenueB
         outState.putParcelable(VENUE_EXTRA, mVenue);
         outState.putInt(COORDINATOR_LAYOUT_VISIBILITY_TAG, mCoordinatorLayout.getVisibility());
         outState.putInt(LOADING_VISIBILITY_TAG, mLoading.getVisibility());
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void getVenueDetail() {
@@ -129,7 +146,7 @@ public class DetailActivity extends AppCompatActivity implements Callback<VenueB
     }
 
     private void showContactCard() {
-        if (mVenue.getContact() != null) {
+        if (mVenue.getContact() != null && !TextUtils.isEmpty(mVenue.getContact().getFormattedPhone())) {
             mPhone.setText(mVenue.getContact().getFormattedPhone());
         } else {
             mPhone.setVisibility(View.GONE);

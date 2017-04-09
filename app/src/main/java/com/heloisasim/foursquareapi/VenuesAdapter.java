@@ -5,8 +5,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.heloisasim.foursquareapi.model.Categories;
+import com.heloisasim.foursquareapi.model.Icon;
 import com.heloisasim.foursquareapi.model.Location;
 import com.heloisasim.foursquareapi.model.Venue;
 
@@ -20,8 +24,14 @@ public class VenuesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     private static final int TYPE_EMPTY = 0;
     private static final int TYPE_VENUE = 1;
+    private static final int ICON_SIZE = 44;
 
+    private final String mUrlParam;
     private List<Venue> mVenues = new ArrayList<>();
+
+    public VenuesAdapter() {
+        mUrlParam = "?client_id=" + BuildConfig.foursquareClientId + "&client_secret=" + BuildConfig.foursquareClientSecret + "&v=" + BuildConfig.foursquareVersion;
+    }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -59,6 +69,9 @@ public class VenuesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     class VenueViewHolder extends RecyclerView.ViewHolder {
 
+        @BindView(R.id.row_category)
+        ImageView mRowCategory;
+
         @BindView(R.id.row_venue_name)
         TextView mName;
 
@@ -82,6 +95,11 @@ public class VenuesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
 
         void onBind(Venue venue) {
+            ArrayList<Categories> categories = venue.getCategories();
+            if (categories != null && !categories.isEmpty()) {
+                Icon icon = categories.get(0).getIcon();
+                Glide.with(itemView.getContext()).load(icon.getPrefix() + ICON_SIZE + icon.getSuffix() + mUrlParam).into(mRowCategory);
+            }
             mName.setText(venue.getName());
             Location location = venue.getLocation();
             mAddress.setText(location.getFormattedAddress().toString());
