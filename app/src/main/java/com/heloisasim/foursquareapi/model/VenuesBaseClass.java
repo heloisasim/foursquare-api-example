@@ -1,6 +1,6 @@
 package com.heloisasim.foursquareapi.model;
 
-public class BaseClass {
+public class VenuesBaseClass {
 
     private Meta meta;
     private Response response;

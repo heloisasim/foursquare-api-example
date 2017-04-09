@@ -6,4 +6,7 @@
     <string name="connection_error">No internet connection</string>
     <string name="generic_error">An error occurred. Try again later.</string>
     <string name="empty_message">There is no venue to show.</string>
+    <string name="empty_info">There is no information to show.</string>
+    <string name="general_information_title">General Information</string>
+    <string name="contact_title">Contact</string>
 </resources>

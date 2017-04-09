@@ -8,7 +8,6 @@ import java.util.ArrayList;
 public class Location implements Parcelable {
 
     private String state;
-    private ArrayList<LabeledLatLngs> labeledLatLngs;
     private String crossStreet;
     private double lat;
     private String address;
@@ -26,14 +25,6 @@ public class Location implements Parcelable {
 
     public void setState(String state) {
         this.state = state;
-    }
-
-    public ArrayList<LabeledLatLngs> getLabeledLatLngs() {
-        return this.labeledLatLngs;
-    }
-
-    public void setLabeledLatLngs(ArrayList<LabeledLatLngs> labeledLatLngs) {
-        this.labeledLatLngs = labeledLatLngs;
     }
 
     public String getCrossStreet() {
@@ -116,6 +107,17 @@ public class Location implements Parcelable {
         this.country = country;
     }
 
+    /**
+     * concat all address information
+     */
+    public String getFullAddress() {
+        String fullAddress = "";
+        for (String address : formattedAddress) {
+            fullAddress += address + "\n";
+        }
+        return fullAddress;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -124,7 +126,6 @@ public class Location implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(this.state);
-        dest.writeTypedList(this.labeledLatLngs);
         dest.writeString(this.crossStreet);
         dest.writeDouble(this.lat);
         dest.writeString(this.address);
@@ -142,7 +143,6 @@ public class Location implements Parcelable {
 
     protected Location(Parcel in) {
         this.state = in.readString();
-        this.labeledLatLngs = in.createTypedArrayList(LabeledLatLngs.CREATOR);
         this.crossStreet = in.readString();
         this.lat = in.readDouble();
         this.address = in.readString();

@@ -1,5 +1,6 @@
 package com.heloisasim.foursquareapi;
 
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.heloisasim.foursquareapi.model.Location;
-import com.heloisasim.foursquareapi.model.Venues;
+import com.heloisasim.foursquareapi.model.Venue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,7 @@ public class VenuesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private static final int TYPE_EMPTY = 0;
     private static final int TYPE_VENUE = 1;
 
-    private List<Venues> mVenues = new ArrayList<>();
+    private List<Venue> mVenues = new ArrayList<>();
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -51,7 +52,7 @@ public class VenuesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         return TYPE_VENUE;
     }
 
-    public void updateVenues(List<Venues> venues) {
+    public void updateVenues(List<Venue> venues) {
         mVenues = venues;
         notifyDataSetChanged();
     }
@@ -67,16 +68,25 @@ public class VenuesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         @BindView(R.id.row_venue_distance)
         TextView mDistance;
 
-        VenueViewHolder(View itemView) {
+        VenueViewHolder(final View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent i = new Intent(v.getContext(), DetailActivity.class);
+                    i.putExtra(DetailActivity.VENUE_EXTRA, (Venue) v.getTag());
+                    v.getContext().startActivity(i);
+                }
+            });
         }
 
-        void onBind(Venues venue) {
+        void onBind(Venue venue) {
             mName.setText(venue.getName());
             Location location = venue.getLocation();
             mAddress.setText(location.getFormattedAddress().toString());
             mDistance.setText(String.valueOf(location.getDistance()) + "m");
+            itemView.setTag(venue);
         }
     }
 

@@ -9,8 +9,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 import com.airbnb.lottie.LottieAnimationView;
-import com.heloisasim.foursquareapi.model.BaseClass;
-import com.heloisasim.foursquareapi.model.Venues;
+import com.heloisasim.foursquareapi.model.Venue;
+import com.heloisasim.foursquareapi.model.VenuesBaseClass;
 import com.heloisasim.foursquareapi.networking.RestClient;
 
 import java.io.IOException;
@@ -22,7 +22,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity implements Callback<BaseClass>, SwipeRefreshLayout.OnRefreshListener {
+public class MainActivity extends AppCompatActivity implements Callback<VenuesBaseClass>, SwipeRefreshLayout.OnRefreshListener {
 
     private static final String RECYCLER_VIEW_TAG = "recycler_view";
     private static final String VENUE_TAG = "venue";
@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements Callback<BaseClas
     SwipeRefreshLayout mSwipeRefresh;
 
     private VenuesAdapter mAdapter;
-    private ArrayList<Venues> mVenues;
+    private ArrayList<Venue> mVenues;
     private RecyclerView.LayoutManager mLayoutManager;
     private Parcelable mRecyclerViewState;
 
@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements Callback<BaseClas
     private void getVenues() {
         // prepare call to foursquare API
         RestClient restClient = new RestClient();
-        Call<BaseClass> mCallVenues = restClient.prepareVenuesRequest();
+        Call<VenuesBaseClass> mCallVenues = restClient.prepareVenuesRequest();
         // do request to foursquare API
         mCallVenues.enqueue(this);
     }
@@ -99,21 +99,19 @@ public class MainActivity extends AppCompatActivity implements Callback<BaseClas
         }
 
         // stop animation
-        if (mLoading.isAnimating()) {
-            mLoading.loop(false);
-            mLoading.setVisibility(View.GONE);
-        }
+        mLoading.loop(false);
+        mLoading.setVisibility(View.GONE);
 
         mRecyclerView.setVisibility(View.VISIBLE);
 
     }
 
     @Override
-    public void onResponse(Call<BaseClass> call, Response<BaseClass> response) {
+    public void onResponse(Call<VenuesBaseClass> call, Response<VenuesBaseClass> response) {
         dismissAnimations();
         // check response
         if (response.isSuccessful()) {
-            BaseClass body = response.body();
+            VenuesBaseClass body = response.body();
             mVenues = body.getResponse().getVenues();
             mAdapter.updateVenues(mVenues);
         } else {
@@ -122,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements Callback<BaseClas
     }
 
     @Override
-    public void onFailure(Call<BaseClass> call, Throwable t) {
+    public void onFailure(Call<VenuesBaseClass> call, Throwable t) {
         dismissAnimations();
         int error = (t instanceof IOException) ? R.string.connection_error : R.string.generic_error;
         Snackbar.make(findViewById(android.R.id.content), error, Snackbar.LENGTH_LONG).show();

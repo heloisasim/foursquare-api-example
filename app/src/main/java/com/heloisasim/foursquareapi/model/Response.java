@@ -8,7 +8,8 @@ import java.util.ArrayList;
 public class Response implements Parcelable {
 	
     private boolean confident;
-    private ArrayList<Venues> venues;
+    private Venue venue;
+    private ArrayList<Venue> venues;
 
     public boolean getConfident() {
         return this.confident;
@@ -18,11 +19,11 @@ public class Response implements Parcelable {
         this.confident = confident;
     }
 
-    public ArrayList<Venues> getVenues() {
+    public ArrayList<Venue> getVenues() {
         return this.venues;
     }
 
-    public void setVenues(ArrayList<Venues> venues) {
+    public void setVenues(ArrayList<Venue> venues) {
         this.venues = venues;
     }
 
@@ -42,8 +43,8 @@ public class Response implements Parcelable {
 
     protected Response(Parcel in) {
         this.confident = in.readByte() != 0;
-        this.venues = new ArrayList<Venues>();
-        in.readList(this.venues, Venues.class.getClassLoader());
+        this.venues = new ArrayList<>();
+        in.readList(this.venues, Venue.class.getClassLoader());
     }
 
     public static final Parcelable.Creator<Response> CREATOR = new Parcelable.Creator<Response>() {
@@ -57,4 +58,12 @@ public class Response implements Parcelable {
             return new Response[size];
         }
     };
+
+    public Venue getVenue() {
+        return venue;
+    }
+
+    public void setVenue(Venue venue) {
+        this.venue = venue;
+    }
 }
