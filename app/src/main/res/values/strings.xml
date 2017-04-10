@@ -9,4 +9,5 @@
     <string name="empty_info">There is no information to show.</string>
     <string name="general_information_title">General Information</string>
     <string name="contact_title">Contact</string>
+    <string name="get_directions">Get directions</string>
 </resources>

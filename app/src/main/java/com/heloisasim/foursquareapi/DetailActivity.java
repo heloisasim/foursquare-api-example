@@ -1,6 +1,8 @@
 package com.heloisasim.foursquareapi;
 
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
@@ -10,6 +12,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -26,6 +29,7 @@ import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -65,6 +69,19 @@ public class DetailActivity extends AppCompatActivity implements Callback<VenueB
 
     @BindView(R.id.detail_hours)
     TextView mHour;
+
+    @BindView(R.id.detail_directions)
+    Button mDirections;
+
+    @OnClick(R.id.detail_directions)
+    public void getDirections() {
+        if (mVenue.getLocation() != null) {
+            Uri gmmIntentUri = Uri.parse("google.navigation:q=" + mVenue.getLocation().getLat() + "," + mVenue.getLocation().getLng() + "&mode=w");
+            Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+            mapIntent.setPackage("com.google.android.apps.maps");
+            startActivity(mapIntent);
+        }
+    }
 
     private Venue mVenue;
 
@@ -156,6 +173,7 @@ public class DetailActivity extends AppCompatActivity implements Callback<VenueB
             mAddress.setText(mVenue.getLocation().getFullAddress());
         } else {
             mAddress.setVisibility(View.GONE);
+            mDirections.setVisibility(View.GONE);
         }
 
     }
