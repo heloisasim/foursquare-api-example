@@ -10,24 +10,19 @@ import android.view.View;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.heloisasim.foursquareapi.model.Venue;
-import com.heloisasim.foursquareapi.model.VenuesBaseClass;
-import com.heloisasim.foursquareapi.networking.RestClient;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity implements Callback<VenuesBaseClass>, SwipeRefreshLayout.OnRefreshListener {
+public class MainActivity extends AppCompatActivity implements MainContract.View, SwipeRefreshLayout.OnRefreshListener {
 
     private static final String RECYCLER_VIEW_TAG = "recycler_view";
-    private static final String VENUE_TAG = "venue";
     private static final String LOADING_VISIBILITY_TAG = "loading_visibility";
     private static final String RECYCLER_VIEW_VISIBILITY_TAG = "recycler_view_visibility";
+
+    private static final String PRESENTER_TAG = "presenter";
 
     @BindView(R.id.recycler_view)
     RecyclerView mRecyclerView;
@@ -39,9 +34,9 @@ public class MainActivity extends AppCompatActivity implements Callback<VenuesBa
     SwipeRefreshLayout mSwipeRefresh;
 
     private VenuesAdapter mAdapter;
-    private ArrayList<Venue> mVenues;
     private RecyclerView.LayoutManager mLayoutManager;
     private Parcelable mRecyclerViewState;
+    private MainContract.Presenter mPresenter;
 
     @SuppressWarnings("WrongConstant")
     @Override
@@ -56,13 +51,14 @@ public class MainActivity extends AppCompatActivity implements Callback<VenuesBa
         mSwipeRefresh.setOnRefreshListener(this);
 
         if (savedInstanceState != null) {
-            mVenues = savedInstanceState.getParcelableArrayList(VENUE_TAG);
+            mPresenter = savedInstanceState.getParcelable(PRESENTER_TAG);
+            mPresenter.setView(this);
+
             mRecyclerViewState = savedInstanceState.getParcelable(RECYCLER_VIEW_TAG);
             mLoading.setVisibility(savedInstanceState.getInt(LOADING_VISIBILITY_TAG));
             mRecyclerView.setVisibility(savedInstanceState.getInt(RECYCLER_VIEW_VISIBILITY_TAG));
-            mAdapter.updateVenues(mVenues);
         } else {
-            getVenues();
+            mPresenter = new MainPresenter(this);
         }
     }
 
@@ -71,28 +67,25 @@ public class MainActivity extends AppCompatActivity implements Callback<VenuesBa
         super.onSaveInstanceState(outState);
         Parcelable parcelable = mRecyclerView.getLayoutManager().onSaveInstanceState();
         outState.putParcelable(RECYCLER_VIEW_TAG, parcelable);
-        outState.putParcelableArrayList(VENUE_TAG, mVenues);
         outState.putInt(LOADING_VISIBILITY_TAG, mLoading.getVisibility());
         outState.putInt(RECYCLER_VIEW_VISIBILITY_TAG, mRecyclerView.getVisibility());
-    }
-
-    private void getVenues() {
-        // prepare call to foursquare API
-        RestClient restClient = new RestClient();
-        Call<VenuesBaseClass> mCallVenues = restClient.prepareVenuesRequest();
-        // do request to foursquare API
-        mCallVenues.enqueue(this);
+        outState.putParcelable(PRESENTER_TAG, (Parcelable) mPresenter);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         // restore recyclerView state, e.g. scrolled position
+        if (mPresenter != null)
+            mPresenter.onViewReady();
+
         if (mRecyclerViewState != null)
             mLayoutManager.onRestoreInstanceState(mRecyclerViewState);
     }
 
-    private void dismissAnimations() {
+    @Override
+    public void dismissAnimations() {
+
         // stop swipe refresh
         if (mSwipeRefresh.isRefreshing()) {
             mSwipeRefresh.setRefreshing(false);
@@ -101,33 +94,25 @@ public class MainActivity extends AppCompatActivity implements Callback<VenuesBa
         // stop animation
         mLoading.loop(false);
         mLoading.setVisibility(View.GONE);
-
         mRecyclerView.setVisibility(View.VISIBLE);
 
     }
 
     @Override
-    public void onResponse(Call<VenuesBaseClass> call, Response<VenuesBaseClass> response) {
-        dismissAnimations();
-        // check response
-        if (response.isSuccessful()) {
-            VenuesBaseClass body = response.body();
-            mVenues = body.getResponse().getVenues();
-            mAdapter.updateVenues(mVenues);
-        } else {
-            Snackbar.make(findViewById(android.R.id.content), R.string.generic_error, Snackbar.LENGTH_LONG).show();
-        }
-    }
-
-    @Override
-    public void onFailure(Call<VenuesBaseClass> call, Throwable t) {
-        dismissAnimations();
-        int error = (t instanceof IOException) ? R.string.connection_error : R.string.generic_error;
+    public void showError(boolean isConnectionError) {
+        int error = isConnectionError ? R.string.connection_error : R.string.generic_error;
         Snackbar.make(findViewById(android.R.id.content), error, Snackbar.LENGTH_LONG).show();
     }
 
     @Override
+    public void updateList(ArrayList<Venue> venues) {
+        mAdapter.updateVenues(venues);
+    }
+
+    @Override
     public void onRefresh() {
-        getVenues();
+        if (mPresenter != null) {
+            mPresenter.loadVenues();
+        }
     }
 }

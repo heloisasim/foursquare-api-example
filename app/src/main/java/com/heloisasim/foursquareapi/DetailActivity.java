@@ -1,7 +1,7 @@
 package com.heloisasim.foursquareapi;
 
 import android.content.Intent;
-import android.graphics.Color;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -9,36 +9,28 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.bumptech.glide.Glide;
-import com.heloisasim.foursquareapi.model.Hours;
-import com.heloisasim.foursquareapi.model.Timeframes;
+import com.heloisasim.foursquareapi.model.BestPhoto;
 import com.heloisasim.foursquareapi.model.Venue;
-import com.heloisasim.foursquareapi.model.VenueBaseClass;
-import com.heloisasim.foursquareapi.networking.RestClient;
-
-import java.io.IOException;
-import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
-public class DetailActivity extends AppCompatActivity implements Callback<VenueBaseClass> {
+public class DetailActivity extends AppCompatActivity implements DetailContract.View {
 
     public static final String VENUE_EXTRA = "venue";
     private static final String LOADING_VISIBILITY_TAG = "loading_visibility";
     private static final String COORDINATOR_LAYOUT_VISIBILITY_TAG = "coordinator_layout_visibility";
+    private static final String PRESENTER_TAG = "presenter";
 
     @BindView(R.id.detail_animation_view)
     LottieAnimationView mLoading;
@@ -73,17 +65,12 @@ public class DetailActivity extends AppCompatActivity implements Callback<VenueB
     @BindView(R.id.detail_directions)
     Button mDirections;
 
+    private DetailPresenter mPresenter;
+
     @OnClick(R.id.detail_directions)
     public void getDirections() {
-        if (mVenue.getLocation() != null) {
-            Uri gmmIntentUri = Uri.parse("google.navigation:q=" + mVenue.getLocation().getLat() + "," + mVenue.getLocation().getLng() + "&mode=w");
-            Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-            mapIntent.setPackage("com.google.android.apps.maps");
-            startActivity(mapIntent);
-        }
+        mPresenter.onGetDirectionsClicked();
     }
-
-    private Venue mVenue;
 
     @SuppressWarnings("WrongConstant")
     @Override
@@ -95,23 +82,25 @@ public class DetailActivity extends AppCompatActivity implements Callback<VenueB
         setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mVenue = getIntent().getParcelableExtra(VENUE_EXTRA);
         if (savedInstanceState != null) {
-            mVenue = savedInstanceState.getParcelable(VENUE_EXTRA);
             mLoading.setVisibility(savedInstanceState.getInt(LOADING_VISIBILITY_TAG));
             mCoordinatorLayout.setVisibility(savedInstanceState.getInt(COORDINATOR_LAYOUT_VISIBILITY_TAG));
-            showVenueDetails();
+
+            mPresenter = savedInstanceState.getParcelable(PRESENTER_TAG);
+            mPresenter.setView(this);
         } else {
-            getVenueDetail();
+            Venue venue = getIntent().getExtras().getParcelable(VENUE_EXTRA);
+            mPresenter = new DetailPresenter(this, venue);
         }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelable(VENUE_EXTRA, mVenue);
         outState.putInt(COORDINATOR_LAYOUT_VISIBILITY_TAG, mCoordinatorLayout.getVisibility());
         outState.putInt(LOADING_VISIBILITY_TAG, mLoading.getVisibility());
+        outState.putParcelable(PRESENTER_TAG, mPresenter);
+
     }
 
     @Override
@@ -123,93 +112,8 @@ public class DetailActivity extends AppCompatActivity implements Callback<VenueB
         return super.onOptionsItemSelected(item);
     }
 
-    private void getVenueDetail() {
-        // prepare call to foursquare API
-        RestClient restClient = new RestClient();
-        Call<VenueBaseClass> mCallVenue = restClient.prepareVenueRequest(mVenue.getId());
-        // do request to foursquare API
-        mCallVenue.enqueue(this);
-    }
-
-
     @Override
-    public void onResponse(Call<VenueBaseClass> call, Response<VenueBaseClass> response) {
-        dismissAnimations();
-
-        if (response.isSuccessful()) {
-            VenueBaseClass body = response.body();
-            mVenue = body.getResponse().getVenue();
-        } else {
-            Snackbar.make(findViewById(android.R.id.content), R.string.generic_error, Snackbar.LENGTH_LONG).show();
-        }
-
-        showVenueDetails();
-    }
-
-    /**
-     * Shows the venue information. If the request with full information did not succeed,
-     * then shows the basic information received via Extra.
-     */
-    private void showVenueDetails() {
-
-        if (mVenue.getBestPhoto() != null) {
-            Glide.with(this).load(mVenue.getBestPhoto().getUrl(getWindowManager())).into(mImageView);
-        }
-
-        mTitle.setTitle(mVenue.getName());
-        showContactCard();
-        showGeneralInfoCard();
-
-    }
-
-    private void showContactCard() {
-        if (mVenue.getContact() != null && !TextUtils.isEmpty(mVenue.getContact().getFormattedPhone())) {
-            mPhone.setText(mVenue.getContact().getFormattedPhone());
-        } else {
-            mPhone.setVisibility(View.GONE);
-        }
-
-        if (mVenue.getLocation() != null) {
-            mAddress.setText(mVenue.getLocation().getFullAddress());
-        } else {
-            mAddress.setVisibility(View.GONE);
-            mDirections.setVisibility(View.GONE);
-        }
-
-    }
-
-    private void showGeneralInfoCard() {
-        Hours hours = mVenue.getHours();
-        if (hours != null) {
-            showOpeningHoursInfo(hours);
-        } else {
-            mStatus.setText(getString(R.string.empty_info));
-            mDays.setVisibility(View.GONE);
-            mHour.setVisibility(View.GONE);
-        }
-    }
-
-    /**
-     * Shows status, days of the week that are open and hours
-     *
-     * @param hours
-     */
-    private void showOpeningHoursInfo(Hours hours) {
-        mStatus.setText(hours.getStatus());
-        mStatus.setTextColor(hours.isOpen() ? Color.GREEN : Color.RED);
-        ArrayList<Timeframes> timeFrames = hours.getTimeframes();
-
-        // Checks null objects and empty lists to prevent errors
-        if (timeFrames != null && !timeFrames.isEmpty()) {
-
-            mDays.setText(timeFrames.get(0).getDays());
-
-            if (timeFrames.get(0).getOpen() != null && !timeFrames.get(0).getOpen().isEmpty())
-                mHour.setText(timeFrames.get(0).getOpen().get(0).getRenderedTime());
-        }
-    }
-
-    private void dismissAnimations() {
+    public void dismissAnimations() {
         // stop animation
         mLoading.loop(false);
         mLoading.setVisibility(View.GONE);
@@ -217,10 +121,81 @@ public class DetailActivity extends AppCompatActivity implements Callback<VenueB
     }
 
     @Override
-    public void onFailure(Call<VenueBaseClass> call, Throwable t) {
-        dismissAnimations();
-        int error = (t instanceof IOException) ? R.string.connection_error : R.string.generic_error;
+    public void showError(boolean isConnectionError) {
+        int error = (isConnectionError) ? R.string.connection_error : R.string.generic_error;
         Snackbar.make(findViewById(android.R.id.content), error, Snackbar.LENGTH_LONG).show();
-        showVenueDetails();
+    }
+
+    @Override
+    public void showName(String name) {
+        mTitle.setTitle(name);
+    }
+
+    @Override
+    public void showHeaderPicture(String url) {
+        Point size = new Point();
+        getWindowManager().getDefaultDisplay().getSize(size);
+        // image width size = screen size
+        url = String.format(url, size.x);
+        Glide.with(this).load(url).into(mImageView);
+    }
+
+    @Override
+    public void showPhone(String phone) {
+        mPhone.setText(phone);
+    }
+
+    @Override
+    public void hidePhone() {
+        mPhone.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void showAddress(String address) {
+        mAddress.setText(address);
+    }
+
+    @Override
+    public void hideAddress() {
+        mAddress.setVisibility(View.GONE);
+        mDirections.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void showEmptyInfo() {
+        mStatus.setText(getString(R.string.empty_info));
+        mDays.setVisibility(View.GONE);
+        mHour.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void showDays(String days) {
+        mDays.setText(days);
+    }
+
+    @Override
+    public void showHours(String hours) {
+        mHour.setText(hours);
+    }
+
+    @Override
+    public void showStatus(String status, int color) {
+        mStatus.setText(status);
+        mStatus.setTextColor(color);
+    }
+
+    @Override
+    public void openMaps(String uri) {
+        Uri gmmIntentUri = Uri.parse(uri);
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+        mapIntent.setPackage("com.google.android.apps.maps");
+        startActivity(mapIntent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mPresenter != null)
+            mPresenter.loadVenue();
     }
 }

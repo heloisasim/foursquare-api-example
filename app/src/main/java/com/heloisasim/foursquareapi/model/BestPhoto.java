@@ -1,12 +1,7 @@
 package com.heloisasim.foursquareapi.model;
 
-import android.graphics.Point;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.view.WindowManager;
-
-import com.heloisasim.foursquareapi.BuildConfig;
-
 
 public class BestPhoto implements Parcelable {
 
@@ -63,18 +58,6 @@ public class BestPhoto implements Parcelable {
 
     public void setVisibility(String visibility) {
         this.visibility = visibility;
-    }
-
-    /**
-     * get the photo url and params for foursquare api
-     *
-     * @return
-     */
-    public String getUrl(WindowManager wm) {
-        Point size = new Point();
-        wm.getDefaultDisplay().getSize(size);
-        // image width size = screen size
-        return prefix + "width" + size.x + suffix + "?client_id=" + BuildConfig.foursquareClientId + "&client_secret=" + BuildConfig.foursquareClientSecret + "&v=" + BuildConfig.foursquareVersion;
     }
 
     @Override
