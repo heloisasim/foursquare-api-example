@@ -52,7 +52,7 @@ public class DetailPresenter implements DetailContract.Presenter, Callback<Venue
     @Override
     public void loadVenue() {
         // prepare call to foursquare API
-        RestClient restClient = new RestClient();
+        RestClient restClient = RestClient.getInstance();
         Call<VenueBaseClass> mCallVenue = restClient.prepareVenueRequest(mVenue.getId());
         // do request to foursquare API
         mCallVenue.enqueue(this);

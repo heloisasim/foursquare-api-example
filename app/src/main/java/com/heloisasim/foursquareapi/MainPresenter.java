@@ -41,7 +41,7 @@ public class MainPresenter implements MainContract.Presenter, Callback<VenuesBas
     @Override
     public void loadVenues() {
         // prepare call to foursquare API
-        RestClient restClient = new RestClient();
+        RestClient restClient = RestClient.getInstance();
         Call<VenuesBaseClass> mCallVenues = restClient.prepareVenuesRequest();
         // do request to foursquare API
         mCallVenues.enqueue(this);
