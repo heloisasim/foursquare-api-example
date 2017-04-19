@@ -1,8 +1,9 @@
 package com.heloisasim.foursquareapi;
 
 import com.heloisasim.foursquareapi.model.Venue;
+import com.heloisasim.foursquareapi.networking.ApiService;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by heloisasim on 13/04/17.
@@ -16,6 +17,8 @@ public interface MainContract {
         void loadVenues();
 
         void setView(View view);
+
+        void setService(ApiService apiService);
     }
 
     interface View {
@@ -23,6 +26,6 @@ public interface MainContract {
 
         void showError(boolean isConnectionError);
 
-        void updateList(ArrayList<Venue> venues);
+        void updateList(List<Venue> venues);
     }
 }

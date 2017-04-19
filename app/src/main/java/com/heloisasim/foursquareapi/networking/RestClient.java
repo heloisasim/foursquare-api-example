@@ -3,7 +3,6 @@ package com.heloisasim.foursquareapi.networking;
 import com.google.gson.Gson;
 import com.heloisasim.foursquareapi.BuildConfig;
 import com.heloisasim.foursquareapi.model.VenueBaseClass;
-import com.heloisasim.foursquareapi.model.VenuesBaseClass;
 
 import okhttp3.OkHttpClient;
 import retrofit2.Call;
@@ -48,8 +47,8 @@ public class RestClient {
         return client;
     }
 
-    public Call<VenuesBaseClass> prepareVenuesRequest() {
-        return mService.getVenues(BuildConfig.foursquareStartLocation, BuildConfig.foursquareClientId, BuildConfig.foursquareClientSecret, BuildConfig.foursquareVersion);
+    public ApiService getService() {
+        return mService;
     }
 
     public Call<VenueBaseClass> prepareVenueRequest(String venueId) {

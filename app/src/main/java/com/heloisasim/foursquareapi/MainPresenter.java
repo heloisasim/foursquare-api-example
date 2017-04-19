@@ -5,11 +5,11 @@ import android.os.Parcelable;
 
 import com.heloisasim.foursquareapi.model.Venue;
 import com.heloisasim.foursquareapi.model.VenuesBaseClass;
-import com.heloisasim.foursquareapi.networking.RestClient;
+import com.heloisasim.foursquareapi.networking.ApiService;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -21,11 +21,13 @@ import retrofit2.Response;
 
 public class MainPresenter implements MainContract.Presenter, Callback<VenuesBaseClass>, Parcelable {
 
+    private ApiService mService;
     private WeakReference<MainContract.View> mView;
-    private ArrayList<Venue> mVenues;
+    private List<Venue> mVenues;
 
-    public MainPresenter(MainContract.View view) {
+    public MainPresenter(MainContract.View view, ApiService service) {
         mView = new WeakReference<>(view);
+        mService = service;
     }
 
     @Override
@@ -41,8 +43,11 @@ public class MainPresenter implements MainContract.Presenter, Callback<VenuesBas
     @Override
     public void loadVenues() {
         // prepare call to foursquare API
-        RestClient restClient = RestClient.getInstance();
-        Call<VenuesBaseClass> mCallVenues = restClient.prepareVenuesRequest();
+        Call<VenuesBaseClass> mCallVenues = mService.getVenues(
+                BuildConfig.foursquareStartLocation,
+                BuildConfig.foursquareClientId,
+                BuildConfig.foursquareClientSecret,
+                BuildConfig.foursquareVersion);
         // do request to foursquare API
         mCallVenues.enqueue(this);
     }
@@ -50,6 +55,11 @@ public class MainPresenter implements MainContract.Presenter, Callback<VenuesBas
     @Override
     public void setView(MainContract.View view) {
         mView = new WeakReference<>(view);
+    }
+
+    @Override
+    public void setService(ApiService apiService) {
+        mService = apiService;
     }
 
     @Override

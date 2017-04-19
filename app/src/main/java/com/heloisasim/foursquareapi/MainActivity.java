@@ -10,8 +10,9 @@ import android.view.View;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.heloisasim.foursquareapi.model.Venue;
+import com.heloisasim.foursquareapi.networking.RestClient;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -50,15 +51,18 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
         mLayoutManager = mRecyclerView.getLayoutManager();
         mSwipeRefresh.setOnRefreshListener(this);
 
+        RestClient restClient = RestClient.getInstance();
+
         if (savedInstanceState != null) {
             mPresenter = savedInstanceState.getParcelable(PRESENTER_TAG);
             mPresenter.setView(this);
+            mPresenter.setService(restClient.getService());
 
             mRecyclerViewState = savedInstanceState.getParcelable(RECYCLER_VIEW_TAG);
             mLoading.setVisibility(savedInstanceState.getInt(LOADING_VISIBILITY_TAG));
             mRecyclerView.setVisibility(savedInstanceState.getInt(RECYCLER_VIEW_VISIBILITY_TAG));
         } else {
-            mPresenter = new MainPresenter(this);
+            mPresenter = new MainPresenter(this, restClient.getService());
         }
     }
 
@@ -105,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements MainContract.View
     }
 
     @Override
-    public void updateList(ArrayList<Venue> venues) {
+    public void updateList(List<Venue> venues) {
         mAdapter.updateVenues(venues);
     }
 
